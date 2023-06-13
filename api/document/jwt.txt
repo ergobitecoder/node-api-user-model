@@ -1,0 +1,169 @@
+
+jwt.sign()
+	generates an access token and a refresh token using the jwt.sign() method from the jsonwebtoken library.
+    The access token is signed with a secret key (process.env.JWT_SECRET) and expires after 1 day (expiresIn: '1d').
+    The refresh token is signed with a different secret key (process.env.JWT_REFRESH_SECRET) and expires after 7 days (expiresIn: '7d').
+    The refresh token is then stored in the refreshToken field of the user document, 
+
+Refresh Token Validation and Refresh:
+
+The loginService.refreshToken function receives the request (req) and the data object, which contains the refresh token (data.refreshToken).
+It verifies the refresh token using jwt.verify() with the refresh token secret (process.env.JWT_REFRESH_SECRET).
+If the refresh token is valid, it retrieves the user from the database based on the decoded user ID.
+If the current time exceeds the refresh token expiration time (user.refreshTokenExp), a new refresh token is generated, and its expiration time is set to 7 days from the current time. The updated refresh token is then saved in the user document.
+If the decoded user ID does not match the user ID from the data object, it returns an error indicating an invalid refresh token.
+Finally, it generates a new access token using the user ID, signs it with the access token secret (process.env.JWT_SECRET), and returns the refreshed tokens (accessToken and refreshToken) along with a success message and status code.
+Token Verification Middleware:
+
+The verifyToken middleware function is used to validate the access token in the request headers.
+It extracts the token from the Authorization header using req.headers['authorization'] and splits it to remove the "Bearer" prefix.
+If the token is missing, it returns a 401 Unauthorized response.
+It then verifies the token using jwt.verify() and the access token secret (process.env.JWT_SECRET).
+If the token is valid, it extracts the user ID from the decoded token and attaches it to the req.user object for further processing in subsequent middleware or route handlers.
+If the token is invalid, it returns a 401 Unauthorized response.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+user registration:	req url:http://localhost:3005/node/login/signup		
+	method : post		
+	"        req {
+           ""firstName"":
+           ""lastName"":
+            ""mobile"":
+            ""email"":
+            ""password"":
+       }
+"		
+	              		
+	{		
+	    "error": {		
+	        "code": 200,		
+	        "message": "SignUp Successfully"		
+	    },		
+	    "success": true,		
+	    "result": {		
+	        "user": {		
+	            "email": "akashkho@gmail.com",		
+	            "mobile": 7507950050,		
+	            "firstName": "akash",		
+	            "lastName": "khomane",		
+	            "password": "$2b$10$xnBJBsGkJ65wVQj0lFG5BuFHWRwZHzPna1F1mKlyGQCOA9drR1Wa6",		
+	            "status": 1,		
+	            "_id": "6475bd5bc07b66af01472a4d",		
+	            "createdAt": "2023-05-30T09:09:47.710Z",		
+	            "updatedAt": "2023-05-30T09:09:47.711Z",		
+	            "__v": 0,		
+	            "refreshToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2NDc1YmQ1YmMwN2I2NmFmMDE0NzJhNGQiLCJpYXQiOjE2ODU0Mzc3ODcsImV4cCI6MTY4NjA0MjU4N30.9XCY2GTd_mTl2ovrwgZn6l54HKVdEVYTUoSTlX7x7XI",		
+	            "refreshTokenExp": "2023-06-06T09:09:47.748Z"		
+	        },		
+	        "accessToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2NDc1YmQ1YmMwN2I2NmFmMDE0NzJhNGQiLCJpYXQiOjE2ODU0Mzc3ODcsImV4cCI6MTY4NTQzODA4N30.XXb2OHKr0zbcuaMJjK0MpRYNz3Eeq80-7U8XgUSfcZ8",		
+	    }		
+	}		
+			
+	pass firstname,lastname,mobile,email,password		
+	all fields are required 		
+	if get all fields it will check mobile no and email id If already present in database will get error email or mobile no already present		
+	bcrypt.hash(data.password, 10);  it will generate hash of the password		
+	then it will save in user once its saved will produce userId		
+	    const accessToken = jwt.sign({payload}, process.env.JWT_SECRET, { expiresIn: '5m' });		
+	to create access token using jwt token 		
+	         1.we need to add jsonwebtoken package in our project		
+	         2.JWTs are used for authentication and authorization purposes, allowing secure transmission of information between parties.		
+	         3.jwt.sign() this function will cerate jwt token		
+	         4.first argument is payload which we will pass data where we want to add token in our case userId		
+	         5.second argument will be secret key which used to signing the jwt 		
+	         6. third parameter will be expiresIn in which we have to pass time to expire the token 		
+			
+	why need jwt:		
+	"Authentication:jwt is used for Authentication,when user log in a jwt token will be created and returened as authintecated 
+result this token can be passed to some request to authinticate the user e.g creating order"		
+	"Authorization and Access Control:JWTs can contain additional information of user
+or their permissions This allows for easy and efficient authorization and access control checks on protected data"		
+	Secure Data Exchange		
+			
+	req url:http://localhost:3005/node/login/:id		
+	method : get		
+	{		
+	    "error": {		
+	        "code": 200,		
+	        "message": " Successfully"		
+	    },		
+	    "success": true,		
+	    "result": {		
+	        "_id": "6475bd5bc07b66af01472a4d",		
+	        "email": "akashkho@gmail.com",		
+	        "mobile": 7507950050,		
+	        "firstName": "akash",		
+	        "lastName": "khomane",		
+	        "password": "$2b$10$xnBJBsGkJ65wVQj0lFG5BuFHWRwZHzPna1F1mKlyGQCOA9drR1Wa6",		
+	        "status": 1,		
+	        "createdAt": "2023-05-30T09:09:47.710Z",		
+	        "updatedAt": "2023-05-30T09:09:47.711Z",		
+	        "__v": 0,		
+	        "refreshToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2NDc1YmQ1YmMwN2I2NmFmMDE0NzJhNGQiLCJpYXQiOjE2ODU0Mzc3ODcsImV4cCI6MTY4NjA0MjU4N30.9XCY2GTd_mTl2ovrwgZn6l54HKVdEVYTUoSTlX7x7XI",		
+	        "refreshTokenExp": "2023-06-06T09:09:47.748Z"		
+	    }		
+	}		
+			
+	while getting user data passed userId and access token to verify user is authorized or not 		"router.route('/:id')
+ .get(verifyToken, loginController.get);"
+	for that used middeleware in that there check access token is valid or not and authorized or not		
+	"in this  case we have to pass accesstoken inside  headers  authorization then it will take that access token remove white spaces and 
+pass to jwt.verify function."		
+	jwt.verify function takes two arguments first token,and second secret key		
+	then it will verify and if accesstoken avilable then then go further and check id particular to that access token		
+	and if not matched will return Unauthorized		
+			
+			
+	 user Login		
+	req url : http://localhost:3005/node/login/		
+	method : post		
+	{		
+			
+	    "password":"akash@123",		
+	    "email":"akashkho@gmail.com"		
+	}		
+			
+	"res:
+{
+    ""error"": {
+        ""code"": 200,
+        ""message"": ""Login Successfully""
+    },
+    ""success"": true,
+    ""result"": {
+        ""user"": {
+            ""_id"": ""6475bd5bc07b66af01472a4d"",
+            ""email"": ""akashkho@gmail.com"",
+            ""mobile"": 7507950050,
+            ""firstName"": ""akash"",
+            ""lastName"": ""khomane"",
+            ""password"": ""$2b$10$xnBJBsGkJ65wVQj0lFG5BuFHWRwZHzPna1F1mKlyGQCOA9drR1Wa6"",
+            ""status"": 1,
+            ""createdAt"": ""2023-05-30T09:09:47.710Z"",
+            ""updatedAt"": ""2023-05-30T09:09:47.711Z"",
+            ""__v"": 0,
+            ""refreshToken"": ""eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2NDc1YmQ1YmMwN2I2NmFmMDE0NzJhNGQiLCJpYXQiOjE2ODU0NDMzMzQsImV4cCI6MTY4NjA0ODEzNH0.VSoYKfzIb5Eqq85O0U9ktBwk76kpmkdCjXNhMNKx3i0"",
+            ""refreshTokenExp"": ""2023-06-06T10:42:14.151Z""
+        },
+        ""accessToken"": ""eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2NDc1YmQ1YmMwN2I2NmFmMDE0NzJhNGQiLCJpYXQiOjE2ODU0NDMzMzQsImV4cCI6MTY4NTQ0MzYzNH0.QsaaflEPwVCQS282joCaRqqiVv33vYT_PpjbBNN0Kyw"",
+        ""refreshToken"": ""eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2NDc1YmQ1YmMwN2I2NmFmMDE0NzJhNGQiLCJpYXQiOjE2ODU0NDMzMzQsImV4cCI6MTY4NjA0ODEzNH0.VSoYKfzIb5Eqq85O0U9ktBwk76kpmkdCjXNhMNKx3i0""
+    }
+}
+"		
